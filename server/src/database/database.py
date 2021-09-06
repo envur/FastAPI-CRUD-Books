@@ -3,7 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:root@localhost:5432/crud_books"
+SQLALCHEMY_DATABASE_URL = "mariadb://root:root@localhost:3306/books-crud"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL

@@ -3,15 +3,26 @@
     <div class="row">
       <div class="col-sm-10">
         <h1>Livros</h1>
+        <div class="text-right" v-if="userID">
+          <b-button variant="danger" v-b-modal.modal-3>
+            Remover conta
+          </b-button>
+          <b-button variant="primary" v-b-modal.modal-4>
+            Atualizar meus dados
+          </b-button>
+          <b-button variant="secondary" @click="logoff()">
+            Sair
+          </b-button>
+        </div>
         <div v-if="!userID" class="text-right">
           <b-button v-b-modal.modal-1>
           Registrar-se
           </b-button>
-          <b-button type="primary" v-b-modal.modal-2>Fazer Login
+          <b-button variant="primary" v-b-modal.modal-2>Fazer Login
           </b-button>
         </div>
         <hr><br>
-        <template v-if = "this.books.length === 0">
+        <template v-if = "this.books.length === 0 && userID">
         <h4>
         Não há livros cadastrados!</h4><br>
         </template>
@@ -23,9 +34,11 @@
             @dismiss-count-down="countDownChanged"
             >{{ message }}
         </b-alert>
-        <button type="button" class="btn btn-success btn-sm" v-b-modal.book-modal
-        @click="onShowModalInsert">Adicionar Livro</button>
-        <br><br>
+        <div v-if="userID">
+          <button type="button" class="btn btn-success btn-sm" v-b-modal.book-modal
+          @click="onShowModalInsert">Adicionar Livro</button>
+          <br><br>
+        </div>
         <table class="table table-hover">
           <thead>
             <tr>
@@ -191,6 +204,43 @@
         </b-button>
       </b-form>
     </b-modal>
+    <b-modal ref="userUpdateModal" hide-footer id="modal-4" title="Atualizar minhas informações">
+      <b-form @submit="onSubmitUserUpdate">
+        <b-form-group
+          id="input-group-1"
+          label="Novo Nome de Usuário:"
+          label-for="input-1"
+        >
+          <b-form-input
+            id="input-1"
+            v-model="UserFormUpdate.username"
+            type="text"
+          ></b-form-input>
+        </b-form-group>
+        <b-form-group
+          id="input-group-1"
+          label="Novo E-mail:"
+          label-for="input-1"
+        >
+          <b-form-input
+            id="input-1"
+            v-model="UserFormUpdate.email"
+            type="email"
+          ></b-form-input>
+        </b-form-group>
+        <b-button type="submit" variant="primary">
+          Atualizar
+        </b-button>
+      </b-form>
+    </b-modal>
+    <b-modal ref="userDeleteModal" hide-footer id="modal-3" title="Exclusão de usuário">
+      <p>Você tem certeza que deseja excluir sua conta?
+        Todos os seus livros cadastrados serão perdidos</p>
+      <div class="text-right">
+        <b-button variant="danger" @click="deleteUser">Excluir</b-button>
+        <b-button>Cancelar</b-button>
+      </div>
+    </b-modal>
   </div>
 </template>
 <script>
@@ -215,6 +265,10 @@ export default {
       UserFormLogin: {
         username: '',
         password: '',
+      },
+      UserFormUpdate: {
+        username: '',
+        email: '',
       },
       message: '',
       bookId: '',
@@ -246,8 +300,8 @@ export default {
     countDownChanged(dismissCountDown) {
       this.dismissCountDown = dismissCountDown;
     },
-    getBooksByUser(userID) {
-      const path = `http://localhost:8000/${userID}/books/get`;
+    getBooksByUser() {
+      const path = `http://localhost:8000/${this.userID}/books/get`;
       axios.get(path)
         .then((res) => {
           this.books = res.data;
@@ -257,33 +311,33 @@ export default {
           console.error(error);
         });
     },
-    addBook(payload, userID) {
+    addBook(payload) {
       console.log(payload);
-      const path = `http://localhost:8000/${userID}/book/add`;
+      const path = `http://localhost:8000/${this.userID}/book/add`;
       axios.post(path, payload)
         .then(() => {
-          this.getBooksByUser(this.userID);
+          this.getBooksByUser();
           this.showAlert('Livro Adicionado!', 'info');
           this.showMessage = true;
         })
         .catch((error) => {
           // eslint-disable-next-line
           console.log(error);
-          this.getBooksByUser(this.userID);
+          this.getBooksByUser();
         });
     },
-    updateBook(payload, bookID, userID) {
-      const path = `http://localhost:8000/${userID}/book/update/${bookID}`;
+    updateBook(payload, bookID) {
+      const path = `http://localhost:8000/${this.userID}/book/update/${bookID}`;
       axios.put(path, payload)
         .then(() => {
-          this.getBooksByUser(this.userID);
+          this.getBooksByUser();
           this.showAlert('Livro Atualizado!', 'primary');
           this.showMessage = true;
         })
         .catch((error) => {
           // eslint-disable-next-line
           console.error(error);
-          this.getBooksByUser(this.userID);
+          this.getBooksByUser();
         });
     },
     initForm() {
@@ -325,20 +379,20 @@ export default {
       evt.preventDefault();
       this.$refs.BookModal.hide();
       this.initForm();
-      this.getBooksByUser(this.userID);
+      this.getBooksByUser();
     },
-    removeBook(bookID, userID) {
-      const path = `http://localhost:8000/${userID}/book/delete/${bookID}`;
+    removeBook(bookID) {
+      const path = `http://localhost:8000/${this.userID}/book/delete/${bookID}`;
       axios.delete(path)
         .then(() => {
-          this.getBooksByUser(this.userID);
+          this.getBooksByUser();
           this.showAlert('Livro Removido!', 'info');
           this.showMessage = true;
         })
         .catch((error) => {
           // eslint-disable-next-line
           console.error(error);
-          this.getBooksByUser(this.userID);
+          this.getBooksByUser();
         });
     },
     onDeleteBook() {
@@ -369,6 +423,19 @@ export default {
       this.authUser(userLoginPayload);
       this.initForm();
     },
+    onSubmitUserUpdate(evt) {
+      evt.preventDefault();
+      this.$refs.userLoginModal.hide();
+      const userUpdatePayload = {
+        items: {
+          username: this.UserFormUpdate.username,
+          email: this.UserFormUpdate.email,
+        },
+      };
+      this.updateUser(userUpdatePayload);
+      this.initForm();
+    },
+
     addUser(userPayload) {
       const path = 'http://localhost:8000/user/register';
       axios.post(path, userPayload)
@@ -390,7 +457,7 @@ export default {
             this.showMessage = true;
             this.userLoggedIn = true;
             this.userID = this.user.id;
-            this.getBooksByUser(this.userID);
+            this.getBooksByUser();
           }
           if (!this.user) {
             this.showAlert('Login falhou', 'danger');
@@ -399,9 +466,30 @@ export default {
           }
         });
     },
-  },
-  created() {
-    this.getBooksByUser(this.userID);
+    deleteUser() {
+      const path = `http://localhost:8000/user/delete/${this.userID}`;
+      axios.delete(path)
+        .then(() => {
+          this.$refs.userDeleteModal.hide();
+          this.showAlert('Usuário Removido!', 'info');
+          this.showMessage = true;
+          this.user = [];
+          this.userID = '';
+          window.location.reload();
+        });
+    },
+    updateUser(userUpdatePayload) {
+      const path = `http://localhost:8000/user/update/${this.userID}`;
+      axios.put(path, userUpdatePayload)
+        .then(() => {
+          this.$refs.userUpdateModal.hide();
+          this.showAlert('Usuário Atualizado!', 'info');
+          this.showMessage = true;
+        });
+    },
+    logoff() {
+      window.location.reload();
+    },
   },
 };
 </script>
