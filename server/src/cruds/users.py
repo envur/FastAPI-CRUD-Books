@@ -1,7 +1,8 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, query
 from sqlalchemy import update
 from src.models import users as u_models
 from src.schemas import users as u_schemas
+from src.schemas import status
 from src.cruds import books as b_cruds
 
 def get_users(db: Session, skip: int = 0, limit: int = 100):
@@ -32,3 +33,14 @@ def delete_user(db: Session, user_id: int):
     db_user = get_user_by_id(db=db, id=user_id)
     db.delete(db_user)
     db.commit()
+
+def auth_user(db: Session, user_credentials: u_schemas.UserAuth):
+    user_credentials.password = user_credentials.password + "hash"
+    db_user = db.query(u_models.User).filter(u_models.User.username == user_credentials.username).first()
+    if not db_user:
+        return status.Status(message="User doesn't exist")
+    print(user_credentials.password)
+    if db_user.hashed_password == user_credentials.password:
+        return db_user
+    if db_user.hashed_password != user_credentials.password:
+        return status.Status(message="Username or password is invalid")

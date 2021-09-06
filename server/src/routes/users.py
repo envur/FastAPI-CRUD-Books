@@ -27,6 +27,10 @@ def create_user(user: u_schemas.UserCreate = Body(..., embed=True), db: Session 
     db_user = u_cruds.create_user(db=db, user=user)
     return db_user
 
+@app.post("/user/login", tags=["Users"], response_model=u_schemas.User)
+def auth_user(user_credentials: u_schemas.UserAuth, db: Session = Depends(get_db)):
+    return u_cruds.auth_user(db, user_credentials)
+
 @app.put("/user/update/{user_id}", tags=["Users"], response_model=status.Status)
 def update_user(user_id: int, items: u_schemas.UserUpdate = Body(..., embed=True), db: Session = Depends(get_db)):
     db_user = u_cruds.get_user_by_id(db, id=user_id)

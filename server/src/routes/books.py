@@ -33,15 +33,15 @@ def add_book(user_id: int, book: b_schemas.BookRegister = Body(..., embed=True),
     db_book = b_cruds.add_book(db, user_id, book)
     return(db_book)
 
-@app.put("/{user_id}/book/update", tags=["Books"], response_model=status.Status)
-def update_book(user_id: int, book: b_schemas.BookUpdate, book_id: int, db: Session = Depends(get_db)):
+@app.put("/{user_id}/book/update/{book_id}", tags=["Books"], response_model=status.Status)
+def update_book(user_id: int, book: b_schemas.BookUpdateRequest, book_id: int, db: Session = Depends(get_db)):
     db_book = b_cruds.get_book_by_id(db, book_id)
     if not db_book:
         raise HTTPException(status_code=400, detail="Couldn't update the specified book")
     db_book = b_cruds.update_book(db, user_id, book, book_id)
     return status.Status(message="Book successfully updated")
 
-@app.delete("/{user_id}/book/delete", tags=["Books"], response_model=status.Status)
+@app.delete("/{user_id}/book/delete/{book_id}", tags=["Books"], response_model=status.Status)
 def delete_book(user_id: int, book_id: int, db: Session = Depends(get_db)):
     db_book = b_cruds.get_book_by_id(db, book_id)
     if not db_book:

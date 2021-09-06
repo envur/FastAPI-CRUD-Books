@@ -21,5 +21,8 @@ class BookUpdate(BaseModel):
     author: Optional[str] = None
     read: Optional[bool] = None
 
+class BookUpdateRequest(BaseModel):
+    book: BookUpdate
+
 class AllBooks(BaseModel):
     books: Book
