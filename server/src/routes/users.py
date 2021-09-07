@@ -22,6 +22,10 @@ def get_users(db: Session = Depends(get_db), skip: int = 0, limit: int = 0):
     db_users = jsonable_encoder(db_users)
     return JSONResponse(db_users)
 
+@app.get("/user/{user_id}", tags=["Users"], response_model=u_schemas.User)
+def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
+    return u_cruds.get_user_by_id(db, user_id)
+
 @app.post("/user/register", tags=["Users"], response_model=u_schemas.User)
 def create_user(user: u_schemas.UserCreate = Body(..., embed=True), db: Session = Depends(get_db)):
     db_user = u_cruds.create_user(db=db, user=user)

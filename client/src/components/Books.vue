@@ -2,27 +2,8 @@
   <div class="container">
     <div class="row">
       <div class="col-sm-10">
-        <h1>Livros</h1>
-        <div class="text-right" v-if="userID">
-          <b-button variant="danger" v-b-modal.modal-3>
-            Remover conta
-          </b-button>
-          <b-button variant="primary" v-b-modal.modal-4>
-            Atualizar meus dados
-          </b-button>
-          <b-button variant="secondary" @click="logoff()">
-            Sair
-          </b-button>
-        </div>
-        <div v-if="!userID" class="text-right">
-          <b-button v-b-modal.modal-1>
-          Registrar-se
-          </b-button>
-          <b-button variant="primary" v-b-modal.modal-2>Fazer Login
-          </b-button>
-        </div>
         <hr><br>
-        <template v-if = "this.books.length === 0 && userID">
+        <template v-if = "this.books.length === 0">
         <h4>
         Não há livros cadastrados!</h4><br>
         </template>
@@ -34,7 +15,7 @@
             @dismiss-count-down="countDownChanged"
             >{{ message }}
         </b-alert>
-        <div v-if="userID">
+        <div>
           <button type="button" class="btn btn-success btn-sm" v-b-modal.book-modal
           @click="onShowModalInsert">Adicionar Livro</button>
           <br><br>
@@ -129,124 +110,18 @@
         </b-button-group>
       </b-form>
     </b-modal>
-    <b-modal ref="userRegisterModal" hide-footer id="modal-1" title="Registrar-se">
-      <b-form @submit="onSubmitUser">
-        <b-form-group
-          id="input-group-1"
-          label="Nome de Usuário:"
-          label-for="input-1"
-        >
-          <b-form-input
-            id="input-1"
-            v-model="UserFormRegister.username"
-            type="text"
-            required
-          ></b-form-input>
-        </b-form-group>
-        <b-form-group
-          id="input-group-1"
-          label="E-mail:"
-          label-for="input-1"
-        >
-          <b-form-input
-            id="input-1"
-            v-model="UserFormRegister.email"
-            type="email"
-            required
-          ></b-form-input>
-        </b-form-group>
-        <b-form-group
-          id="input-group-1"
-          label="Senha:"
-          label-for="input-1"
-          description="Escolha uma senha segura."
-        >
-          <b-form-input
-            id="input-1"
-            v-model="UserFormRegister.password"
-            type="password"
-            required
-          ></b-form-input>
-        </b-form-group>
-        <b-button type="submit" variant="primary">
-          Registrar
-        </b-button>
-      </b-form>
-    </b-modal>
-    <b-modal ref="userLoginModal" hide-footer id="modal-2" title="Fazer Login">
-      <b-form @submit="onSubmitUserCredentials">
-        <b-form-group
-          id="input-group-1"
-          label="Usuário:"
-          label-for="input-1"
-        >
-          <b-form-input
-            id="input-1"
-            v-model="UserFormLogin.username"
-            type="text"
-            required
-          ></b-form-input>
-        </b-form-group>
-        <b-form-group
-          id="input-group-1"
-          label="Senha:"
-          label-for="input-1"
-        >
-          <b-form-input
-            id="input-1"
-            v-model="UserFormLogin.password"
-            type="password"
-            required
-          ></b-form-input>
-        </b-form-group>
-        <b-button type="submit" variant="primary">
-          Login
-        </b-button>
-      </b-form>
-    </b-modal>
-    <b-modal ref="userUpdateModal" hide-footer id="modal-4" title="Atualizar minhas informações">
-      <b-form @submit="onSubmitUserUpdate">
-        <b-form-group
-          id="input-group-1"
-          label="Novo Nome de Usuário:"
-          label-for="input-1"
-        >
-          <b-form-input
-            id="input-1"
-            v-model="UserFormUpdate.username"
-            type="text"
-          ></b-form-input>
-        </b-form-group>
-        <b-form-group
-          id="input-group-1"
-          label="Novo E-mail:"
-          label-for="input-1"
-        >
-          <b-form-input
-            id="input-1"
-            v-model="UserFormUpdate.email"
-            type="email"
-          ></b-form-input>
-        </b-form-group>
-        <b-button type="submit" variant="primary">
-          Atualizar
-        </b-button>
-      </b-form>
-    </b-modal>
-    <b-modal ref="userDeleteModal" hide-footer id="modal-3" title="Exclusão de usuário">
-      <p>Você tem certeza que deseja excluir sua conta?
-        Todos os seus livros cadastrados serão perdidos</p>
-      <div class="text-right">
-        <b-button variant="danger" @click="deleteUser">Excluir</b-button>
-        <b-button>Cancelar</b-button>
-      </div>
-    </b-modal>
   </div>
 </template>
 <script>
 import axios from 'axios';
 
 export default {
+  props: {
+    userID: Number,
+  },
+  mounted() {
+    this.getBooksByUser();
+  },
   data() {
     return {
       books: [],
@@ -256,20 +131,6 @@ export default {
         author: '',
         read: false,
       },
-      user: [],
-      UserFormRegister: {
-        username: '',
-        email: '',
-        password: '',
-      },
-      UserFormLogin: {
-        username: '',
-        password: '',
-      },
-      UserFormUpdate: {
-        username: '',
-        email: '',
-      },
       message: '',
       bookId: '',
       showMessage: false,
@@ -277,7 +138,6 @@ export default {
       tituloModal: '',
       variant: '',
       botao: '',
-      userID: '',
     };
   },
   components: {
@@ -398,97 +258,6 @@ export default {
     onDeleteBook() {
       this.removeBook(this.bookId);
       this.$bvModal.hide('modal-del');
-    },
-    onSubmitUser(evt) {
-      evt.preventDefault();
-      this.$refs.userRegisterModal.hide();
-      const userPayload = {
-        user: {
-          username: this.UserFormRegister.username,
-          email: this.UserFormRegister.email,
-          password: this.UserFormRegister.password,
-        },
-      };
-      console.log(userPayload);
-      this.addUser(userPayload);
-      this.initForm();
-    },
-    onSubmitUserCredentials(evt) {
-      evt.preventDefault();
-      this.$refs.userLoginModal.hide();
-      const userLoginPayload = {
-        username: this.UserFormLogin.username,
-        password: this.UserFormLogin.password,
-      };
-      this.authUser(userLoginPayload);
-      this.initForm();
-    },
-    onSubmitUserUpdate(evt) {
-      evt.preventDefault();
-      this.$refs.userLoginModal.hide();
-      const userUpdatePayload = {
-        items: {
-          username: this.UserFormUpdate.username,
-          email: this.UserFormUpdate.email,
-        },
-      };
-      this.updateUser(userUpdatePayload);
-      this.initForm();
-    },
-
-    addUser(userPayload) {
-      const path = 'http://localhost:8000/user/register';
-      axios.post(path, userPayload)
-        .then(() => {
-          this.showAlert('Usuário adicionado, faça login para adicionar livros', 'primary');
-          this.showMessage = true;
-        });
-      this.UserFormRegister.username = '';
-      this.UserFormRegister.email = '';
-      this.UserFormRegister.password = '';
-    },
-    authUser(userLoginPayload) {
-      const path = 'http://localhost:8000/user/login';
-      axios.post(path, userLoginPayload)
-        .then((res) => {
-          this.user = res.data;
-          if (this.user) {
-            this.showAlert('Logado com sucesso!', 'success');
-            this.showMessage = true;
-            this.userLoggedIn = true;
-            this.userID = this.user.id;
-            this.getBooksByUser();
-          }
-          if (!this.user) {
-            this.showAlert('Login falhou', 'danger');
-            this.showMessage = true;
-            this.userLoggedIn = false;
-          }
-        });
-    },
-    deleteUser() {
-      const path = `http://localhost:8000/user/delete/${this.userID}`;
-      axios.delete(path)
-        .then(() => {
-          this.$refs.userDeleteModal.hide();
-          this.showAlert('Usuário Removido!', 'info');
-          this.showMessage = true;
-          this.user = [];
-          this.userID = '';
-          window.location.reload();
-        });
-    },
-    updateUser(userUpdatePayload) {
-      const path = `http://localhost:8000/user/update/${this.userID}`;
-      axios.put(path, userUpdatePayload)
-        .then(() => {
-          this.$refs.userUpdateModal.hide();
-          this.showAlert('Usuário Atualizado!', 'info');
-          this.showMessage = true;
-        });
-    },
-    logoff() {
-      window.location.reload();
     },
   },
 };
