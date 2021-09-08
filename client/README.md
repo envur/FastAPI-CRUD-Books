@@ -1,4 +1,5 @@
 # client
+### Make sure to execute these commands inside the virtual environment created on the server directory.
 
 ## Project setup
 ```
