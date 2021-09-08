@@ -6,7 +6,7 @@
         <div class="container-fluid border">
           <div class="container">
             <h2 class="my-3">
-              Olá!
+              Login
             </h2>
             <p>Faça login para continuar:</p>
             <hr>
@@ -32,9 +32,6 @@
                     type="password"
                     required
                   ></b-form-input>
-                  <div class="text-right">
-                    <a href="">Esqueceu sua senha?</a>
-                  </div>
                 </b-form-group>
                 <div class="text-right my-4">
                   <router-link to="/register">
@@ -84,6 +81,11 @@ export default {
           }
         });
     },
+  },
+  mounted() {
+    if (JSON.parse(localStorage.getItem('userAccount') !== null)) {
+      this.$router.push('home');
+    }
   },
 };
 </script>

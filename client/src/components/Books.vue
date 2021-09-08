@@ -161,7 +161,7 @@ export default {
       this.dismissCountDown = dismissCountDown;
     },
     getBooksByUser() {
-      const path = `http://localhost:8000/${this.userID}/books/get`;
+      const path = `http://localhost:8000/user/${this.userID}/books/get`;
       axios.get(path)
         .then((res) => {
           this.books = res.data;
@@ -173,7 +173,7 @@ export default {
     },
     addBook(payload) {
       console.log(payload);
-      const path = `http://localhost:8000/${this.userID}/book/add`;
+      const path = `http://localhost:8000/user/${this.userID}/book/add`;
       axios.post(path, payload)
         .then(() => {
           this.getBooksByUser();
@@ -187,7 +187,7 @@ export default {
         });
     },
     updateBook(payload, bookID) {
-      const path = `http://localhost:8000/${this.userID}/book/update/${bookID}`;
+      const path = `http://localhost:8000/user/${this.userID}/book/update/${bookID}`;
       axios.put(path, payload)
         .then(() => {
           this.getBooksByUser();
@@ -242,7 +242,7 @@ export default {
       this.getBooksByUser();
     },
     removeBook(bookID) {
-      const path = `http://localhost:8000/${this.userID}/book/delete/${bookID}`;
+      const path = `http://localhost:8000/user/${this.userID}/book/delete/${bookID}`;
       axios.delete(path)
         .then(() => {
           this.getBooksByUser();

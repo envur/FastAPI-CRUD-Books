@@ -29,6 +29,12 @@ def update_user(db: Session, user: u_schemas.UserUpdate, user_id: int):
     db.execute(db_user)
     db.commit()
 
+def change_user_password(db: Session, user: u_schemas.UserUpdatePass, user_id: int):
+    fake_hash_pass = user.new_password + "hash"
+    db_user = update(u_models.User).where(u_models.User.id == user_id).values(hashed_password = fake_hash_pass)
+    db.execute(db_user)
+    db.commit()
+
 def delete_user(db: Session, user_id: int):
     db_user = get_user_by_id(db=db, id=user_id)
     db.delete(db_user)

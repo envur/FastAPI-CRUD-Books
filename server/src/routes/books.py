@@ -22,18 +22,18 @@ def get_books(skip: int = 0, limit = 100, db: Session = Depends(get_db)):
     db_books = jsonable_encoder(db_books)
     return JSONResponse(db_books)
 
-@app.get("/{user_id}/books/get", tags=["Books"], response_model=List[b_schemas.AllBooks])
+@app.get("/user/{user_id}/books/get", tags=["Books"], response_model=List[b_schemas.AllBooks])
 def get_books_by_user(user_id: int, db: Session = Depends(get_db)):
     db_books = b_cruds.get_books_by_user(db, user_id)
     db_books = jsonable_encoder(db_books)
     return JSONResponse(db_books)
 
-@app.post("/{user_id}/book/add", tags=["Books"], response_model=b_schemas.Book)
+@app.post("/user/{user_id}/book/add", tags=["Books"], response_model=b_schemas.Book)
 def add_book(user_id: int, book: b_schemas.BookRegister = Body(..., embed=True), db: Session = Depends(get_db)):
     db_book = b_cruds.add_book(db, user_id, book)
     return(db_book)
 
-@app.put("/{user_id}/book/update/{book_id}", tags=["Books"], response_model=status.Status)
+@app.put("/user/{user_id}/book/update/{book_id}", tags=["Books"], response_model=status.Status)
 def update_book(user_id: int, book: b_schemas.BookUpdateRequest, book_id: int, db: Session = Depends(get_db)):
     db_book = b_cruds.get_book_by_id(db, book_id)
     if not db_book:
@@ -41,7 +41,7 @@ def update_book(user_id: int, book: b_schemas.BookUpdateRequest, book_id: int, d
     db_book = b_cruds.update_book(db, user_id, book, book_id)
     return status.Status(message="Book successfully updated")
 
-@app.delete("/{user_id}/book/delete/{book_id}", tags=["Books"], response_model=status.Status)
+@app.delete("/user/{user_id}/book/delete/{book_id}", tags=["Books"], response_model=status.Status)
 def delete_book(user_id: int, book_id: int, db: Session = Depends(get_db)):
     db_book = b_cruds.get_book_by_id(db, book_id)
     if not db_book:

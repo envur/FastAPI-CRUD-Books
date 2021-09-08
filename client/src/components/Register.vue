@@ -74,7 +74,11 @@ export default {
       user: [],
     };
   },
-
+  mounted() {
+    if (JSON.parse(localStorage.getItem('userAccount') !== null)) {
+      this.$router.push('home');
+    }
+  },
   methods: {
     onSubmitUser(evt) {
       evt.preventDefault();

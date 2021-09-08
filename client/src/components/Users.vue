@@ -1,19 +1,11 @@
 <template>
   <div class="container">
+    <UserOptions style="float:right"></UserOptions>
     <div class="row">
       <div class="col-sm-10">
+        <span style="display: inline;">
         <h1>Bem vindo de volta, {{ this.username }}!</h1>
-        <div class="text-right">
-          <b-button variant="danger" v-b-modal.modal-3>
-            Remover conta
-          </b-button>
-          <b-button variant="primary" v-b-modal.modal-4>
-            Atualizar meus dados
-          </b-button>
-          <b-button variant="secondary" @click="logoff()">
-            Sair
-          </b-button>
-        </div>
+        </span>
       </div>
     </div>
     <b-modal ref="userUpdateModal" hide-footer id="modal-4" title="Atualizar minhas informações">
@@ -27,6 +19,7 @@
             id="input-1"
             v-model="UserFormUpdate.username"
             type="text"
+            required
           ></b-form-input>
         </b-form-group>
         <b-form-group
@@ -38,11 +31,50 @@
             id="input-1"
             v-model="UserFormUpdate.email"
             type="email"
+            required
           ></b-form-input>
         </b-form-group>
-        <b-button type="submit" variant="primary">
-          Atualizar
-        </b-button>
+        <div class="text-right">
+          <b-button v-b-modal.modal-5 variant="secondary">
+            Redefinir Senha
+          </b-button>
+          <b-button type="submit" variant="primary">
+            Atualizar
+          </b-button>
+        </div>
+      </b-form>
+    </b-modal>
+    <b-modal ref="resetPassModal" hide-footer id="modal-5" title="Redefinir Senha">
+      <b-form @submit="onSubmitUserChangePass">
+        <b-form-group
+          id="input-group-1"
+          label="Insira sua senha atual:"
+          label-for="input-1"
+        >
+          <b-form-input
+            id="input-1"
+            v-model="UserFormResetPass.oldPassword"
+            type="password"
+            required
+          ></b-form-input>
+        </b-form-group>
+        <b-form-group
+          id="input-group-1"
+          label="Nova senha:"
+          label-for="input-1"
+        >
+          <b-form-input
+            id="input-1"
+            v-model="UserFormResetPass.newPassword"
+            type="password"
+            required
+          ></b-form-input>
+        </b-form-group>
+        <div class="text-right">
+          <b-button type="submit" variant="primary">
+            Redefinir
+          </b-button>
+        </div>
       </b-form>
     </b-modal>
     <b-modal ref="userDeleteModal" hide-footer id="modal-3" title="Exclusão de usuário">
@@ -50,24 +82,32 @@
         Todos os seus livros cadastrados serão perdidos</p>
       <div class="text-right">
         <b-button variant="danger" @click="deleteUser">Excluir</b-button>
-        <b-button>Cancelar</b-button>
       </div>
     </b-modal>
   </div>
 </template>
+
 <script>
 import axios from 'axios';
+import UserOptions from './UserOptions.vue';
 
 export default {
   props: {
     userID: Number,
     username: String,
   },
+  components: {
+    UserOptions,
+  },
   data() {
     return {
       UserFormUpdate: {
         username: '',
         email: '',
+      },
+      UserFormResetPass: {
+        oldPassword: '',
+        newPassword: '',
       },
     };
   },
@@ -87,6 +127,18 @@ export default {
       };
       this.updateUser(userUpdatePayload);
     },
+    onSubmitUserChangePass(evt) {
+      evt.preventDefault();
+      this.$refs.userUpdateModal.hide();
+      this.$refs.resetPassModal.hide();
+      const userChangePassPayload = {
+        items: {
+          old_password: this.UserFormResetPass.oldPassword,
+          new_password: this.UserFormResetPass.newPassword,
+        },
+      };
+      this.changeUserPass(userChangePassPayload);
+    },
     get_user() {
       const path = `http://localhost:8000/user/${this.userID}`;
       axios.get(path)
@@ -100,6 +152,7 @@ export default {
       axios.delete(path)
         .then(() => {
           this.$refs.userDeleteModal.hide();
+          localStorage.removeItem('userAccount');
           this.$router.push('login');
         });
     },
@@ -110,9 +163,13 @@ export default {
           this.$refs.userUpdateModal.hide();
         });
     },
-    logoff() {
-      localStorage.removeItem('userAccount');
-      this.$router.push('login');
+    changeUserPass(userChangePassPayload) {
+      const path = `http://localhost:8000/user/update/password/${this.userID}`;
+      axios.put(path, userChangePassPayload)
+        .then(() => {
+          this.$refs.userUpdateModal.hide();
+          this.$refs.resetPassModal.hide();
+        });
     },
   },
 };

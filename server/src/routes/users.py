@@ -17,9 +17,10 @@ def get_db():
         db.close()
 
 @app.get("/users/get", tags=["Users"], response_model=u_schemas.AllUsers)
-def get_users(db: Session = Depends(get_db), skip: int = 0, limit: int = 0):
+def get_users(db: Session = Depends(get_db), skip: int = 0, limit: int = 100):
     db_users = u_cruds.get_users(db, skip, limit)
     db_users = jsonable_encoder(db_users)
+    print(db_users)
     return JSONResponse(db_users)
 
 @app.get("/user/{user_id}", tags=["Users"], response_model=u_schemas.User)
@@ -42,6 +43,16 @@ def update_user(user_id: int, items: u_schemas.UserUpdate = Body(..., embed=True
         raise HTTPException(status_code=400, detail="User not found")
     u_cruds.update_user(user_id=user_id, user=items, db=db)
     return status.Status(message="User updated successfully")
+
+@app.put("/user/update/password/{user_id}", tags=["Users"], response_model=status.Status)
+def update_user(user_id: int, items: u_schemas.UserUpdatePass = Body(..., embed=True), db: Session = Depends(get_db)):
+    db_user = u_cruds.get_user_by_id(db, id=user_id)
+    if not db_user:
+        raise HTTPException(status_code=400, detail="User not found")
+    if db_user.hashed_password == items.old_password + "hash":
+        u_cruds.change_user_password(user_id=user_id, user=items, db=db)
+        return status.Status(message="User updated successfully")
+    return status.Status(message="Couldn't change user's password!")
 
 @app.delete("/user/delete/{user_id}", tags=["Users"], response_model=status.Status)
 def delete_user(user_id: int, db: Session = Depends(get_db)):

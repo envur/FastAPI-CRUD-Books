@@ -23,6 +23,10 @@ class UserUpdate(BaseModel):
     username: Optional[str] = None
     email: Optional[str] = None
 
+class UserUpdatePass(BaseModel):
+    old_password: str
+    new_password: str
+
 class UserAuth(BaseModel):
     username: str
     password: str
