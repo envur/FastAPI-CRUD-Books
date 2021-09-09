@@ -172,7 +172,6 @@ export default {
         });
     },
     addBook(payload) {
-      console.log(payload);
       const path = `http://localhost:8000/user/${this.userID}/book/add`;
       axios.post(path, payload)
         .then(() => {

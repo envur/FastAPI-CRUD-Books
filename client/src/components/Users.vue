@@ -113,7 +113,6 @@ export default {
   },
   created() {
     this.get_user();
-    console.log(this.userInfo);
   },
   methods: {
     onSubmitUserUpdate(evt) {

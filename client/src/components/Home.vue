@@ -1,8 +1,8 @@
 <template>
     <div>
-      <div>
-        <User :userID="loggedUser.userId" :username="loggedUser.username"></User>
-        <Books :userID="loggedUser.userId"></Books>
+      <div v-if="userId !== null && username !== null">
+        <User :userID="userId" :username="username"></User>
+        <Books :userID="userId"></Books>
       </div>
     </div>
 </template>
@@ -14,11 +14,12 @@ import Books from './Books.vue';
 export default {
   data() {
     return {
-      userId: this.$route.params.user,
-      username: this.$route.params.username,
+      userId: null,
+      username: null,
       checkedId: '',
       checkedUsername: '',
-      loggedUser: JSON.parse(localStorage.getItem('userAccount')),
+      loggedUser: [],
+      // loggedUser: JSON.parse(localStorage.getItem('userAccount')),
     };
   },
   components: {
@@ -26,19 +27,25 @@ export default {
     Books,
   },
   mounted() {
-    this.getCurrentUser();
+    if (this.$route.params.user) {
+      this.getCurrentUserByRoute();
+    }
+    if (localStorage.getItem('userAccount')) {
+      this.getCurrentUserByLocalStorage();
+    } else { this.$router.push('login'); }
   },
   methods: {
-    getCurrentUser() {
-      if (this.userId && this.username) {
-        this.checkedId = this.userId;
-        this.checkedUsername = this.username;
-        localStorage.setItem('userAccount', JSON.stringify({ username: this.checkedUsername, userId: this.checkedId }));
-        window.location.reload();
-      }
-      if (!this.loggedUser.userId) {
-        this.$router.push('login');
-      }
+    getCurrentUserByRoute() {
+      this.userId = this.$route.params.user;
+      this.username = this.$route.params.username;
+      this.checkedUsername = this.username;
+      this.checkedId = this.userId;
+      localStorage.setItem('userAccount', JSON.stringify({ username: this.checkedUsername, Id: this.checkedId }));
+    },
+    getCurrentUserByLocalStorage() {
+      this.loggedUser = JSON.parse(localStorage.getItem('userAccount'));
+      this.userId = this.loggedUser.Id;
+      this.username = this.loggedUser.username;
     },
   },
 };

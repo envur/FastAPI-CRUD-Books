@@ -60,6 +60,7 @@ export default {
         username: '',
         password: '',
       },
+      userLogged: JSON.parse(localStorage.getItem('userAccount')),
     };
   },
   methods: {
@@ -83,7 +84,7 @@ export default {
     },
   },
   mounted() {
-    if (JSON.parse(localStorage.getItem('userAccount') !== null)) {
+    if (this.userLogged) {
       this.$router.push('home');
     }
   },
